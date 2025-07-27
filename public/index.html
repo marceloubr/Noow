@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App de Entregas</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Painel de Entregas</h1>
+  </header>
+  <main>
+    <section id="deliveries-section">
+      <h2>Entregas Pendentes</h2>
+      <div id="deliveries-list">
+        <!-- As entregas serão inseridas aqui via JavaScript -->
+      </div>
+    </section>
+    <hr>
+    <section id="form-section">
+      <h2>Adicionar Nova Entrega</h2>
+      <form id="add-delivery-form">
+        <input type="text" id="platform" placeholder="Plataforma (ex: UberEats)" required>
+        <input type="text" id="orderId" placeholder="ID do Pedido" required>
+        <input type="text" id="clientName" placeholder="Nome do Cliente" required>
+        <input type="text" id="pickupAddress" placeholder="Endereço de Retirada" required>
+        <input type="text" id="deliveryAddress" placeholder="Endereço de Entrega" required>
+        <button type="submit">Adicionar Entrega</button>
+      </form>
+    </section>
+  </main>
+  <script src="js/app.js"></script>
+</body>
+</html>

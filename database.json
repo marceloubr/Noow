@@ -1,0 +1,13 @@
+{
+  "deliveries": [
+    {
+      "platform": "UberEats",
+      "orderId": "UE123",
+      "clientName": "João Silva",
+      "pickupAddress": "Rua A, 123",
+      "deliveryAddress": "Rua B, 456",
+      "id": 1753659103793,
+      "status": "Entregue"
+    }
+  ]
+}
