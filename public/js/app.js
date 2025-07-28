@@ -78,7 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(savedTheme);
 
         settingsUsernameEl.textContent = user.username;
-        logoutBtn.addEventListener('click', () => {
+        logoutBtn.addEventListener('click', async () => {
+            await fetch('/api/auth/logout', { method: 'POST' });
             sessionStorage.clear();
             localStorage.removeItem('theme'); // Limpa a preferência de tema
             window.location.href = '/';
