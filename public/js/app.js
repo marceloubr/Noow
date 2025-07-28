@@ -25,6 +25,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let mainMap = null;
     let detailsMap = null;
 
+    // --- Lógica de Tema (Dark/Light) ---
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const body = document.body;
+
+    function applyTheme(theme) {
+        if (theme === 'dark') {
+            body.classList.add('dark-mode');
+            themeToggleBtn.textContent = 'Mudar para Modo Claro';
+        } else {
+            body.classList.remove('dark-mode');
+            themeToggleBtn.textContent = 'Mudar para Modo Escuro';
+        }
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = body.classList.contains('dark-mode') ? 'light' : 'dark';
+        localStorage.setItem('theme', currentTheme);
+        applyTheme(currentTheme);
+    });
+
     // --- Lógica de Navegação por Abas ---
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -53,9 +73,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Inicialização ---
     async function init() {
+        // Aplica o tema salvo
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        applyTheme(savedTheme);
+
         settingsUsernameEl.textContent = user.username;
         logoutBtn.addEventListener('click', () => {
             sessionStorage.clear();
+            localStorage.removeItem('theme'); // Limpa a preferência de tema
             window.location.href = '/';
         });
 
@@ -129,9 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let pickupNavBtn = (delivery.status === 'Aceito' || delivery.status === 'Coletado') ? `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodedPickup}" target="_blank" class="nav-btn">Navegar</a>` : '';
         let deliveryNavBtn = delivery.status === 'Coletado' ? `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodedDelivery}" target="_blank" class="nav-btn">Navegar</a>` : '';
 
+        const pickupIcon = '<svg class="icon" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>';
+        const deliveryIcon = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';
+
         detailsInfoEl.innerHTML = `
-            <div class="address-line"><p><strong>De:</strong> ${delivery.pickupAddress}</p>${pickupNavBtn}</div>
-            <div class="address-line"><p><strong>Para:</strong> ${delivery.deliveryAddress}</p>${deliveryNavBtn}</div>`;
+            <div class="address-line">${pickupIcon}<p>${delivery.pickupAddress}</p>${pickupNavBtn}</div>
+            <div class="address-line">${deliveryIcon}<p>${delivery.deliveryAddress}</p>${deliveryNavBtn}</div>`;
 
         let actionButton = '';
         switch(delivery.status) {
