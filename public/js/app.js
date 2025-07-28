@@ -1,172 +1,147 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const user = JSON.parse(sessionStorage.getItem('user'));
-
-  // Protege a página
-  if (!user) {
-    window.location.href = '/';
-    return;
-  }
-
-  const deliveriesList = document.getElementById('deliveries-list');
-  const pageTitle = document.querySelector('h1');
-  pageTitle.textContent = `Painel de Entregas - ${user.username}`;
-
-
-  // Função para buscar e exibir as entregas
-  async function fetchAndDisplayDeliveries() {
-    try {
-      const response = await fetch('/api/deliveries');
-      if (!response.ok) {
-        throw new Error('Erro ao buscar entregas');
-      }
-      const deliveries = await response.json();
-
-      // Limpa a lista atual
-      deliveriesList.innerHTML = '';
-
-      if (deliveries.length === 0) {
-        deliveriesList.innerHTML = '<p>Nenhuma entrega pendente.</p>';
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    if (!user) {
+        window.location.href = '/';
         return;
-      }
+    }
 
-      // Filtra e exibe as entregas
-      const relevantDeliveries = deliveries.filter(d => d.status === 'Pendente' || d.assignedTo === user.id);
+    // Elementos da UI
+    const viewList = document.getElementById('view-list');
+    const viewDetails = document.getElementById('view-details');
+    const deliveriesListEl = document.getElementById('deliveries-list');
+    const userInfoEl = document.getElementById('user-info');
+    const backBtn = document.getElementById('back-to-list-btn');
 
-      if (relevantDeliveries.length === 0) {
-        deliveriesList.innerHTML = '<p>Nenhuma entrega disponível no momento.</p>';
-        return;
-      }
+    // Elementos dos Detalhes
+    const detailsOrderIdEl = document.getElementById('details-order-id');
+    const detailsMapEl = document.getElementById('details-map');
+    const detailsInfoEl = document.getElementById('details-info');
+    const detailsActionEl = document.getElementById('details-action');
 
-      relevantDeliveries.forEach(delivery => {
-        const deliveryElement = document.createElement('div');
-        deliveryElement.className = 'delivery-item';
-        let actionButton = '';
+    let map = null;
+    let deliveries = [];
 
-        switch(delivery.status) {
-            case 'Pendente':
-                actionButton = `<button class="update-status-btn" data-id="${delivery.id}" data-next-status="Aceito">Aceitar Pedido</button>`;
-                break;
-            case 'Aceito':
-                actionButton = `<button class="update-status-btn" data-id="${delivery.id}" data-next-status="Coletado">Marcar como Coletado</button>`;
-                break;
-            case 'Coletado':
-                actionButton = `<button class="update-status-btn" data-id="${delivery.id}" data-next-status="Entregue">Marcar como Entregue</button>`;
-                break;
-            case 'Entregue':
-                actionButton = '<span>Pedido Finalizado</span>';
-                break;
+    userInfoEl.textContent = `Olá, ${user.username}`;
+
+    // Navegação entre telas
+    function showListView() {
+        viewList.classList.remove('hidden');
+        viewDetails.classList.add('hidden');
+    }
+
+    function showDetailsView() {
+        viewList.classList.add('hidden');
+        viewDetails.classList.remove('hidden');
+    }
+
+    backBtn.addEventListener('click', showListView);
+
+    // Renderizar a lista de entregas
+    function renderDeliveriesList() {
+        deliveriesListEl.innerHTML = '';
+        const relevantDeliveries = deliveries.filter(d => d.status !== 'Entregue' && (d.assignedTo === null || d.assignedTo === user.id));
+
+        if (relevantDeliveries.length === 0) {
+            deliveriesListEl.innerHTML = '<p style="padding: 15px;">Nenhum pedido disponível.</p>';
+            return;
         }
 
-        deliveryElement.innerHTML = `
-          <h3>Pedido #${delivery.orderId} (${delivery.platform})</h3>
-          <p><strong>Status:</strong> <span class="status">${delivery.status}</span></p>
-          <button class="view-details-btn" data-pickup="${delivery.pickupAddress}" data-delivery="${delivery.deliveryAddress}">Ver Detalhes</button>
-          ${actionButton}
-        `;
-        deliveriesList.appendChild(deliveryElement);
-      });
-
-      // Adiciona ouvintes de evento para os botões de detalhes
-      document.querySelectorAll('.view-details-btn').forEach(button => {
-        button.addEventListener('click', (event) => {
-          const { pickup, delivery } = event.target.dataset;
-          showMapForDelivery(pickup, delivery);
+        relevantDeliveries.forEach(delivery => {
+            const item = document.createElement('div');
+            item.className = 'delivery-item';
+            item.dataset.id = delivery.id;
+            item.innerHTML = `
+                <h3>Pedido #${delivery.id}</h3>
+                <p>${delivery.pickupAddress}</p>
+                <p><strong>Status: ${delivery.status}</strong></p>
+            `;
+            item.addEventListener('click', () => renderDetailsView(delivery.id));
+            deliveriesListEl.appendChild(item);
         });
-      });
+    }
 
-      // Lógica de atualização de status
-      document.querySelectorAll('.update-status-btn').forEach(button => {
-        button.addEventListener('click', async (event) => {
-          const id = event.target.dataset.id;
-          const nextStatus = event.target.dataset.nextStatus;
+    // Renderizar a tela de detalhes
+    function renderDetailsView(id) {
+        const delivery = deliveries.find(d => d.id === id);
+        if (!delivery) return;
 
-          try {
+        detailsOrderIdEl.textContent = `Pedido #${delivery.id}`;
+
+        // Info do Pedido
+        detailsInfoEl.innerHTML = `
+            <p><strong>De:</strong> ${delivery.pickupAddress}</p>
+            <p><strong>Para:</strong> ${delivery.deliveryAddress}</p>
+        `;
+
+        // Ação do Pedido
+        let actionButton = '';
+        switch(delivery.status) {
+            case 'Pendente':
+                actionButton = `<button data-id="${delivery.id}" data-next-status="Aceito">ACEITAR PEDIDO</button>`;
+                break;
+            case 'Aceito':
+                actionButton = `<button data-id="${delivery.id}" data-next-status="Coletado">CHEGUEI NA COLETA</button>`;
+                break;
+            case 'Coletado':
+                actionButton = `<button data-id="${delivery.id}" data-next-status="Entregue">FINALIZAR ENTREGA</button>`;
+                break;
+        }
+        detailsActionEl.innerHTML = actionButton;
+        if(detailsActionEl.querySelector('button')){
+            detailsActionEl.querySelector('button').addEventListener('click', handleUpdateStatus);
+        }
+
+        // Inicializar ou atualizar o mapa
+        if (!map) {
+            map = L.map('details-map');
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        }
+        const pickupCoords = [38.7223, -9.1393];
+        const deliveryCoords = [38.7369, -9.1427];
+        map.eachLayer(layer => { if (layer instanceof L.Marker) map.removeLayer(layer); });
+        L.marker(pickupCoords).addTo(map).bindPopup(delivery.pickupAddress);
+        L.marker(deliveryCoords).addTo(map).bindPopup(delivery.deliveryAddress);
+        map.fitBounds([pickupCoords, deliveryCoords], { padding: [50, 50] });
+        setTimeout(() => map.invalidateSize(), 100);
+
+        showDetailsView();
+    }
+
+    // Atualizar status
+    async function handleUpdateStatus(event) {
+        const { id, nextStatus } = event.target.dataset;
+        try {
             const response = await fetch(`/api/deliveries/${id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: nextStatus, assignedTo: user.id })
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: nextStatus, assignedTo: user.id })
             });
+            if (!response.ok) throw new Error('Falha ao atualizar');
 
-            if (!response.ok) {
-              throw new Error('Erro ao atualizar status');
-            }
-            fetchAndDisplayDeliveries(); // Recarrega a lista
-          } catch (error) {
+            // Atualiza o estado local e re-renderiza
+            const updatedDelivery = await response.json();
+            const index = deliveries.findIndex(d => d.id === updatedDelivery.id);
+            deliveries[index] = updatedDelivery;
+
+            renderDeliveriesList();
+            showListView();
+
+        } catch (error) {
             console.error(error);
             alert('Não foi possível atualizar o status.');
-          }
-        });
-      });
-    } catch (error) {
-      console.error(error);
-      deliveriesList.innerHTML = '<p>Erro ao carregar as entregas.</p>';
-    }
-  }
-
-  // Lógica para o formulário de adicionar entrega
-  const addDeliveryForm = document.getElementById('add-delivery-form');
-  addDeliveryForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const newDelivery = {
-      platform: document.getElementById('platform').value,
-      orderId: document.getElementById('orderId').value,
-      clientName: document.getElementById('clientName').value,
-      pickupAddress: document.getElementById('pickupAddress').value,
-      deliveryAddress: document.getElementById('deliveryAddress').value,
-    };
-
-    try {
-      const response = await fetch('/api/deliveries', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newDelivery),
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao adicionar entrega');
-      }
-
-      // Limpa o formulário e atualiza a lista
-      addDeliveryForm.reset();
-      fetchAndDisplayDeliveries();
-    } catch (error) {
-      console.error(error);
-      alert('Não foi possível adicionar a entrega.');
-    }
-  });
-
-  let map = null;
-
-  // Função para exibir o mapa para uma entrega
-  function showMapForDelivery(pickupAddress, deliveryAddress) {
-    const mapContainer = document.getElementById('map-container');
-    mapContainer.style.display = 'block';
-
-    // Simulação de geocodificação
-    const pickupCoords = [38.7223, -9.1393]; // Lisboa
-    const deliveryCoords = [38.7369, -9.1427]; // Um pouco ao norte de Lisboa
-
-    if (!map) {
-      map = L.map('map-container').setView(pickupCoords, 13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      }).addTo(map);
-    } else {
-        map.eachLayer((layer) => {
-            if (layer instanceof L.Marker) {
-                map.removeLayer(layer);
-            }
-        });
+        }
     }
 
-    L.marker(pickupCoords).addTo(map).bindPopup(`<b>Retirada:</b> ${pickupAddress}`);
-    L.marker(deliveryCoords).addTo(map).bindPopup(`<b>Entrega:</b> ${deliveryAddress}`);
-    map.fitBounds([pickupCoords, deliveryCoords], { padding: [50, 50] });
-  }
+    // Função inicial
+    async function init() {
+        try {
+            const response = await fetch('/api/deliveries');
+            deliveries = await response.json();
+            renderDeliveriesList();
+        } catch (error) {
+            console.error('Erro ao buscar entregas:', error);
+        }
+    }
 
-  // Carrega as entregas quando a página é carregada
-  fetchAndDisplayDeliveries();
+    init();
 });

@@ -4,35 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>App de Entregas</title>
-  <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <link rel="stylesheet" href="/css/style.css">
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Painel de Entregas</h1>
-  </header>
-  <main>
-    <div id="map-container" style="height: 400px; display: none;"></div>
-    <section id="deliveries-section">
-      <h2>Entregas Disponíveis</h2>
-      <div id="deliveries-list">
-        <!-- As entregas serão inseridas aqui via JavaScript -->
-      </div>
-    </section>
-    <hr>
-    <section id="form-section">
-      <h2>Adicionar Nova Entrega</h2>
-      <form id="add-delivery-form">
-        <input type="text" id="platform" placeholder="Plataforma (ex: UberEats)" required>
-        <input type="text" id="orderId" placeholder="ID do Pedido" required>
-        <input type="text" id="clientName" placeholder="Nome do Cliente" required>
-        <input type="text" id="pickupAddress" placeholder="Endereço de Retirada" required>
-        <input type="text" id="deliveryAddress" placeholder="Endereço de Entrega" required>
-        <button type="submit">Adicionar Entrega</button>
-      </form>
-    </section>
-  </main>
+  <div id="app-container">
+    <!-- Visualização da Lista de Pedidos -->
+    <div id="view-list">
+      <header>
+        <h1>Pedidos</h1>
+        <div id="user-info"></div>
+      </header>
+      <main id="deliveries-list">
+        <!-- A lista de pedidos será renderizada aqui -->
+      </main>
+    </div>
+
+    <!-- Visualização de Detalhes do Pedido -->
+    <div id="view-details" class="hidden">
+      <header>
+        <button id="back-to-list-btn">&larr; Voltar</button>
+        <h1 id="details-order-id"></h1>
+      </header>
+      <div id="details-map" style="height: 300px;"></div>
+      <div id="details-info"></div>
+      <footer id="details-action"></footer>
+    </div>
+  </div>
+
   <script src="js/app.js"></script>
 </body>
 </html>

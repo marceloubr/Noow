@@ -60,29 +60,6 @@ const server = http.createServer((req, res) => {
     const db = readDB();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(db.deliveries));
-  } else if (req.method === 'POST' && req.url === '/api/deliveries') {
-    // Criar uma nova entrega
-    let body = '';
-    req.on('data', chunk => {
-      body += chunk.toString();
-    });
-    req.on('end', () => {
-      try {
-        const newDelivery = JSON.parse(body);
-        newDelivery.id = Date.now(); // ID único simples
-        newDelivery.status = 'Pendente';
-
-        const db = readDB();
-        db.deliveries.push(newDelivery);
-        writeDB(db);
-
-        res.writeHead(201, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(newDelivery));
-      } catch (e) {
-        res.writeHead(400);
-        res.end('Dados inválidos');
-      }
-    });
   } else if (req.method === 'PUT' && req.url.startsWith('/api/deliveries/')) {
     // Atualizar o status de uma entrega
     let body = '';
