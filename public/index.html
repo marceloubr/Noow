@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>App de Entregas</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <link rel="stylesheet" href="/css/style.css">
@@ -10,24 +10,51 @@
 </head>
 <body>
   <div id="app-container">
-    <!-- Visualização da Lista de Pedidos -->
-    <div id="view-list">
-      <header>
-        <h1>Pedidos</h1>
-        <div id="user-info"></div>
-      </header>
-      <main id="deliveries-list">
-        <!-- A lista de pedidos será renderizada aqui -->
-      </main>
-    </div>
+    <main id="main-content">
+      <!-- Aba do Mapa (Tela Principal) -->
+      <div id="tab-map" class="tab-content">
+        <div id="main-map"></div>
+      </div>
 
-    <!-- Visualização de Detalhes do Pedido -->
+      <!-- Aba de Entregas -->
+      <div id="tab-deliveries" class="tab-content hidden">
+        <header><h1>Pedidos</h1></header>
+        <div id="deliveries-list"></div>
+      </div>
+
+      <!-- Aba de Definições -->
+      <div id="tab-settings" class="tab-content hidden">
+          <header><h1>Definições</h1></header>
+          <div style="padding: 15px;">
+            <p>Olá, <span id="settings-username"></span>!</p>
+            <button id="logout-btn">Sair</button>
+          </div>
+      </div>
+    </main>
+
+    <!-- Barra de Navegação Inferior -->
+    <nav id="tab-bar">
+      <button data-tab="map" class="tab-btn active">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        <span>Mapa</span>
+      </button>
+      <button data-tab="deliveries" class="tab-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
+        <span>Entregas</span>
+      </button>
+      <button data-tab="settings" class="tab-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.08-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+        <span>Definições</span>
+      </button>
+    </nav>
+
+    <!-- Tela de Detalhes (sobrepõe as abas) -->
     <div id="view-details" class="hidden">
       <header>
         <button id="back-to-list-btn">&larr; Voltar</button>
         <h1 id="details-order-id"></h1>
       </header>
-      <div id="details-map" style="height: 300px;"></div>
+      <div id="details-map"></div>
       <div id="details-info"></div>
       <footer id="details-action"></footer>
     </div>
