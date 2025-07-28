@@ -5,13 +5,14 @@ function start() {
     const restaurant = await db.Restaurant.findOne(); // Em um app real, buscaria o restaurante correto
     if (restaurant) {
       await db.Delivery.create({
-        orderId: `UE-${Date.now()}`,
+        platform: 'UberEats',
         pickupAddress: restaurant.address,
         deliveryAddress: 'Rua Fictícia, 123',
-        status: 'Pendente',
+        value: 7.5,
+        estimatedTime: 20,
         RestaurantId: restaurant.id,
       });
-      console.log('Novo pedido do UberEats criado');
+      console.log('Novo pedido do UberEats recebido');
     }
   }, 30000);
 }

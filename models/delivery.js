@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const Delivery = sequelize.define('Delivery', {
-    orderId: {
-      type: DataTypes.STRING,
+    platform: {
+      type: DataTypes.STRING, // 'UberEats', 'Glovo'
       allowNull: false
     },
     pickupAddress: {
@@ -15,17 +15,15 @@ module.exports = (sequelize, DataTypes) => {
     status: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: 'Pendente' // 'Pendente', 'Aceito', 'Coletado', 'Entregue'
+      defaultValue: 'Pendente' // 'Pendente', 'Aceito', 'Coletado', 'Entregue', 'Cancelado'
     },
-    paymentValue: {
+    value: {
       type: DataTypes.FLOAT,
-      allowNull: false,
-      defaultValue: 5.0 // Valor padrão da entrega
+      allowNull: false
     },
-    paid: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
+    estimatedTime: {
+      type: DataTypes.INTEGER, // in minutes
+      allowNull: false
     }
   });
 

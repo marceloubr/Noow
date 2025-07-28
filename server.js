@@ -1,13 +1,7 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const db = require('./models');
-const deliveryRoutes = require('./routes/deliveryRoutes');
-const authRoutes = require('./routes/authRoutes');
-const restaurantRoutes = require('./routes/restaurantRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -24,15 +18,13 @@ app.use(
   })
 );
 
-// Rotas da API
-app.use('/api/deliveries', deliveryRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/restaurant', restaurantRoutes);
-app.use('/api/admin', require('./routes/adminRoutes'));
+// Rotas
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/deliveries', require('./routes/deliveryRoutes'));
 
 const uberEatsService = require('./services/uberEatsService');
 const glovoService = require('./services/glovoService');
-const paymentService = require('./services/paymentService');
+const deliveryService = require('./services/deliveryService');
 
 // Sincronizar o banco de dados e iniciar o servidor
 db.sequelize.sync({ force: true }).then(async () => { // force: true irá recriar as tabelas a cada inicialização
@@ -43,16 +35,17 @@ db.sequelize.sync({ force: true }).then(async () => { // force: true irá recria
   });
 
   // Criar um usuário entregador padrão
+  const hashedPassword = await require('bcrypt').hash('123', 10);
   await db.User.create({
-    username: 'entregador',
-    password: '123', // Em um app real, use hashes de senha
-    role: 'deliverer',
+    email: 'entregador@email.com',
+    password: hashedPassword,
+    status: 'verified',
   });
 
   app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);
     uberEatsService.start();
     glovoService.start();
-    paymentService.start();
+    deliveryService.start();
   });
 });
